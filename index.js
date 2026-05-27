@@ -26,6 +26,26 @@ let botState = {
   wasThrottled: false,
 };
 
+// --- SILENT AFK SPECTATOR MOVEMENT LOOP ---
+setInterval(() => {
+    if (bot && bot.entity) {
+        // 1. Rotate head randomly
+        const yaw = Math.random() * Math.PI * 2;
+        bot.look(yaw, 0);
+
+        // 2. Fly forward slightly
+        bot.setControlState('forward', true);
+
+        // 3. Stop moving after 2 seconds so it stays in the area
+        setTimeout(() => {
+            if (bot && bot.entity) {
+                bot.setControlState('forward', false);
+            }
+        }, 2000);
+    }
+}, 240000); // Triggers every 4 minutes (240,000 ms)
+
+
 // Health check endpoint for monitoring
 app.get('/', (req, res) => {
   res.send(`
