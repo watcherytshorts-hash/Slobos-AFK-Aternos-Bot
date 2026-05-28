@@ -1452,16 +1452,16 @@ function initializeModules(bot, mcData, defaultMove) {
       }
     });
 
-    // Failsafe: if no prompt after 10s, try login anyway
+    // Failsafe: if no prompt after 20s, try login anyway
     setTimeout(() => {
       if (!authHandled && bot && botState.connected) {
         addLog(
-          "[Auth] No prompt detected after 10s, sending /login as failsafe",
+          "[Auth] No prompt detected after 20s, sending /login as failsafe",
         );
         bot.chat(`/login ${password}`);
         authHandled = true;
       }
-    }, 10000);
+    }, 20000);
   }
 
   // ---------- CHAT MESSAGES ----------
