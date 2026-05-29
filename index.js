@@ -3,7 +3,48 @@
 
 
 const { addLog, getLogs } = require("./logger");
-const mineflayer = require("mineflayer");
+const mineflayer = require('mineflayer');
+const http = require('http'); // Built-in node package, no install needed
+
+// --- KOYEB ANTI-SLEEP ALIVE TICK ---
+// This keeps Koyeb from shutting down the bot after 1 hour
+const port = process.env.PORT || 8080;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Bot is alive and running!\n');
+}).listen(port, () => {
+  console.log(`Anti-sleep server listening on port ${port}`);
+});
+
+// --- YOUR CLEAN MINEFLAYER BOT INITIALIZATION ---
+try {
+  const botVersion =
+    config.server.version && config.server.version.trim() !== ""
+      ? config.server.version
+      : false;
+
+  bot = mineflayer.createBot({
+    username: config["bot-account"].username,
+    password: config["bot-account"].password || undefined,
+    auth: config["bot-account"].type,
+    host: config.server.ip,
+    port: config.server.port,
+    version: botVersion,
+    hideErrors: false,
+    checkTimeoutInterval: 600000 // Keep your safety net timeout intact
+  });
+
+  bot.loadPlugin(pathfinder);
+
+  // Your existing movement/AFK event listeners continue right here...
+  bot.on('spawn', () => {
+    console.log("SUCCESS: Bot has successfully joined the server via Koyeb!");
+  });
+
+} catch (error) {
+  console.log("Error initializing bot:", error);
+}
+
 const { Movements, pathfinder, goals } = require("mineflayer-pathfinder");
 const { GoalBlock } = goals;
 const config = require("./settings.json");
