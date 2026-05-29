@@ -1242,8 +1242,9 @@ function createBot() {
       ? config.server.version
       : false;
 
-  const proxyHost = '178.17.57.222'; 
+  const proxyHost = '45.80.231.251'; 
   const proxyPort = 1080;           
+
 
 
   bot = mineflayer.createBot({
