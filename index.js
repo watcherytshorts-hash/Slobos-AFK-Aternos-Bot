@@ -1,5 +1,6 @@
 "use strict";
 
+const { SocksClient } = require('socks');
 const { addLog, getLogs } = require("./logger");
 const mineflayer = require("mineflayer");
 const { Movements, pathfinder, goals } = require("mineflayer-pathfinder");
@@ -1226,24 +1227,52 @@ function createBot() {
   addLog(`[Bot] Connecting to ${config.server.ip}:${config.server.port}`);
 
   try {
-    // FIX: use version:false to auto-detect server version so the bot can join any server.
-    // If the user explicitly sets a version in settings.json it is still respected.
-    const botVersion =
-      config.server.version && config.server.version.trim() !== ""
-        ? config.server.version
-        : false;
-    bot = mineflayer.createBot({
-      username: config["bot-account"].username,
-      password: config["bot-account"].password || undefined,
-      auth: config["bot-account"].type,
-      host: config.server.ip,
-      port: config.server.port,
-      version: botVersion,
-      hideErrors: false,
-      checkTimeoutInterval: 600000,
-    });
+  // FIX: use version:false to auto-detect server version so the...
+  const botVersion =
+    config.server.version && config.server.version.trim() !== ""
+      ? config.server.version
+      : false;
 
-    bot.loadPlugin(pathfinder);
+  const proxyHost = '178.17.57.222'; 
+  const proxyPort = 1080;           
+
+
+  bot = mineflayer.createBot({
+    username: config["bot-account"].username,
+    password: config["bot-account"].password || undefined,
+    auth: config["bot-account"].type,
+    host: config.server.ip,
+    port: config.server.port,
+    version: botVersion,
+    hideErrors: false,
+    checkTimeoutInterval: 600000,
+    // This intercepts the connection and tunnels it through the proxy
+    connect: (client) => {
+      SocksClient.createConnection({
+        proxy: {
+          host: proxyHost,
+          port: Number(proxyPort),
+          type: 5 // SOCKS5
+        },
+        command: 'connect',
+        destination: {
+          host: config.server.ip,
+          port: Number(config.server.port)
+        }
+      }, (err, info) => {
+        if (err) {
+          addLog(`[Proxy Error] Connection failed: ${err.message}`);
+          return;
+        }
+        // Hand the proxy socket straight to the Mineflayer client stream
+        client.setSocket(info.socket);
+        client.emit('connect');
+      });
+    }
+  });
+
+  bot.loadPlugin(pathfinder);
+
 
     // FIX: connection timeout - end the old bot before reconnecting to avoid ghost bots
     clearBotTimeouts();
