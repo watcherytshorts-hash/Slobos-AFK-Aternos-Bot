@@ -1,6 +1,15 @@
 "use strict";
 
-const { SocksClient } = require('socks');
+// Automatically downloads socks if it's missing from package.json
+let SocksClient;
+try {
+  SocksClient = require('socks').SocksClient;
+} catch (e) {
+  console.log("Socks package missing, installing on the fly...");
+  require('child_process').execSync('npm install socks');
+  SocksClient = require('socks').SocksClient;
+}
+
 const { addLog, getLogs } = require("./logger");
 const mineflayer = require("mineflayer");
 const { Movements, pathfinder, goals } = require("mineflayer-pathfinder");
