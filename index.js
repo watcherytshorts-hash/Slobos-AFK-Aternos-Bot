@@ -1,14 +1,6 @@
 "use strict";
 
-// Automatically downloads socks if it's missing from package.json
-let SocksClient;
-try {
-  SocksClient = require('socks').SocksClient;
-} catch (e) {
-  console.log("Socks package missing, installing on the fly...");
-  require('child_process').execSync('npm install socks');
-  SocksClient = require('socks').SocksClient;
-}
+
 
 const { addLog, getLogs } = require("./logger");
 const mineflayer = require("mineflayer");
@@ -1236,16 +1228,10 @@ function createBot() {
   addLog(`[Bot] Connecting to ${config.server.ip}:${config.server.port}`);
 
   try {
-  // FIX: use version:false to auto-detect server version so the...
   const botVersion =
     config.server.version && config.server.version.trim() !== ""
       ? config.server.version
       : false;
-
-  const proxyHost = '45.80.231.251'; 
-  const proxyPort = 1080;           
-
-
 
   bot = mineflayer.createBot({
     username: config["bot-account"].username,
@@ -1255,33 +1241,11 @@ function createBot() {
     port: config.server.port,
     version: botVersion,
     hideErrors: false,
-    checkTimeoutInterval: 600000,
-    // This intercepts the connection and tunnels it through the proxy
-    connect: (client) => {
-      SocksClient.createConnection({
-        proxy: {
-          host: proxyHost,
-          port: Number(proxyPort),
-          type: 5 // SOCKS5
-        },
-        command: 'connect',
-        destination: {
-          host: config.server.ip,
-          port: Number(config.server.port)
-        }
-      }, (err, info) => {
-        if (err) {
-          addLog(`[Proxy Error] Connection failed: ${err.message}`);
-          return;
-        }
-        // Hand the proxy socket straight to the Mineflayer client stream
-        client.setSocket(info.socket);
-        client.emit('connect');
-      });
-    }
+    checkTimeoutInterval: 600000
   });
 
   bot.loadPlugin(pathfinder);
+
 
 
     // FIX: connection timeout - end the old bot before reconnecting to avoid ghost bots
